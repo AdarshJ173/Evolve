@@ -1,0 +1,2249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evolve: An AI-Powered Learning Ecosystem</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Fonts for Evolve: Mission Script for headings, Inter for body text, and a subtle accent font if needed -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Define Evolve's specific color palette and design tokens */
+        :root {
+            /* Core Palette: Paper, Black and White Contrast */
+            --paper-white: #F5F5EC; /* Subtle off-white for backgrounds, evoking paper */
+            --charcoal-black: #1A1A1A; /* Primary text and line art */
+            --dark-gray: #363636; /* Secondary backgrounds, content blocks */
+
+            /* Accent Colors: Dopamine Spark (from Evolve Gemini.txt, Perplexity.txt) */
+            --accent-orange: #F6B740; /* Motivation, attention (e.g., CTAs) */
+            --accent-blue: #4682B4; /* Calmness, focus (e.g., interactive elements, progress) */
+            --accent-mint-green: #98FB98; /* Concentration, growth (e.g., definitions, positive feedback) */
+            --accent-soft-pink: #FFB6C1; /* Tranquility, welcoming (subtle accents, friendly notifications) */
+            --critical-red: #DC143C; /* Urgency, warning (error messages, use sparingly) */
+
+            /* Tailwind-like variables for easy mapping */
+            --primary-text: var(--charcoal-black);
+            --secondary-text: var(--dark-gray);
+            --background-light: var(--paper-white);
+            --background-dark: var(--charcoal-black); /* For dark mode or contrasting sections */
+            --border-color: #e2e8f0; /* Light gray for borders, similar to base-300 */
+        }
+
+        /* General Body Styles */
+        body {
+            font-family: 'Inter', sans-serif; /* Primary body font */
+            background: var(--background-light);
+            color: var(--primary-text);
+            line-height: 1.7;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+        }
+
+        /* Specific Font Styles */
+        .serif {
+            font-family: 'Crimson Text', serif; /* For main headings, evoking textbook feel */
+        }
+
+        .accent-font {
+            font-family: 'Kalam', cursive; /* For decorative elements, quotes, hand-drawn feel */
+        }
+
+        /* Utility Classes for Evolve's Aesthetic */
+        .paper-bg {
+            background-color: var(--paper-white);
+            background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%239C92AC' fill-opacity='0.05' fill-rule='evenodd'%3E%3Cpath d='M5 0h1L0 6V5zM6 5v1H5z'/%3E%3C/g%3E%3C/svg%3E"); /* Subtle paper texture */
+        }
+
+        .line-art-border {
+            border: 2px dashed var(--charcoal-black);
+            border-radius: 8px;
+        }
+
+        .sketch-shadow {
+            box-shadow: 5px 5px 0px 0px var(--dark-gray); /* Hand-drawn shadow effect */
+        }
+
+        /* Hero Section Styling */
+        .hero-bg {
+            background: linear-gradient(135deg, var(--charcoal-black) 0%, var(--dark-gray) 50%, #334155 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-overlay {
+            background: linear-gradient(45deg, rgba(26, 26, 26, 0.9), rgba(54, 54, 54, 0.7));
+            backdrop-filter: blur(2px);
+        }
+
+        #vanta-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Table of Contents Styling */
+        .toc-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--background-light);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            z-index: 50;
+            padding: 2rem 0;
+            transition: transform 0.3s ease; /* For mobile toggle */
+        }
+
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+        }
+
+        .section-padding {
+            padding: 4rem 0;
+        }
+
+        /* Bento Grid Layout */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .bento-item {
+            background: var(--background-light);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            box-shadow: 3px 3px 0px 0px rgba(0,0,0,0.1); /* Subtle default shadow */
+        }
+
+        .bento-item:hover {
+            border-color: var(--accent-blue);
+            box-shadow: 5px 5px 0px 0px var(--accent-blue); /* Accent shadow on hover */
+            transform: translateY(-2px);
+        }
+
+        /* Highlight Boxes */
+        .highlight-box {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-left: 4px solid var(--accent-blue);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Citation Links */
+        .citation-link {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.3s ease;
+        }
+
+        .citation-link:hover {
+            border-bottom-color: var(--accent-blue);
+        }
+
+        /* Tech Cards */
+        .tech-card {
+            background: var(--background-light);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            transition: all 0.3s ease;
+            box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.08);
+        }
+
+        .tech-card:hover {
+            border-color: var(--accent-mint-green);
+            box-shadow: 4px 4px 0px 0px var(--accent-mint-green);
+            transform: translateY(-1px);
+        }
+
+        /* Pull Quotes */
+        .pull-quote {
+            font-size: 1.5rem;
+            font-style: italic;
+            color: var(--secondary-text);
+            border-left: 4px solid var(--accent-orange);
+            padding-left: 2rem;
+            margin: 2rem 0;
+            line-height: 1.6;
+        }
+
+        /* Specific Feature Cards */
+        .feature-card {
+            background: var(--background-light);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 4px 4px 0px 0px var(--accent-orange);
+            border-color: var(--accent-orange);
+        }
+
+        /* Timeline Specific Styles */
+        .timeline-container {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .timeline-item-content {
+            background: var(--background-light);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.05);
+            flex: 1;
+            margin-left: 20px;
+            position: relative;
+        }
+
+        .timeline-item-content::before {
+            content: '';
+            position: absolute;
+            left: -19px;
+            top: 20px;
+            width: 0;
+            height: 0;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            border-right: 10px solid var(--border-color);
+        }
+
+        .timeline-item-content::after {
+            content: '';
+            position: absolute;
+            left: -17px;
+            top: 21px;
+            width: 0;
+            height: 0;
+            border-top: 9px solid transparent;
+            border-bottom: 9px solid transparent;
+            border-right: 9px solid var(--background-light);
+        }
+
+        .timeline-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            z-index: 10;
+            flex-shrink: 0;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 19px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border-color);
+            z-index: 5;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 1024px) {
+            .toc-fixed {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .toc-fixed.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero-content p {
+                font-size: 1rem;
+            }
+            
+            .bento-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .bento-item {
+                padding: 1.5rem;
+            }
+            .section-padding {
+                padding: 2rem 0;
+            }
+
+            .timeline-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .timeline-icon {
+                margin-bottom: 10px;
+            }
+
+            .timeline-item-content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .timeline-item-content::before, .timeline-item-content::after {
+                display: none; /* Hide triangles on small screens */
+            }
+
+            .timeline-line {
+                display: none; /* Hide vertical line on small screens */
+            }
+        }
+    </style>
+  </head>
+
+  <body>
+    <!-- Table of Contents -->
+    <nav class="toc-fixed">
+      <div class="px-6">
+        <h3 class="text-lg font-semibold text-slate-800 mb-4">Contents</h3>
+        <ul class="space-y-2 text-sm">
+          <li>
+            <a href="#hero" class="citation-link block py-1">Overview</a>
+          </li>
+          <li>
+            <a href="#executive-summary" class="citation-link block py-1">Executive Summary</a>
+          </li>
+          <li>
+            <a href="#design-principles" class="citation-link block py-1">1. Design Principles & UI/UX</a>
+          </li>
+          <li>
+            <a href="#core-features" class="citation-link block py-1">2. Core Features & Functionalities</a>
+          </li>
+          <li>
+            <a href="#tech-stack-overview" class="citation-link block py-1">3. Technology Stack Overview</a>
+          </li>
+          <li>
+            <a href="#frontend-arch" class="citation-link block py-1">4. Frontend Architecture</a>
+          </li>
+          <li>
+            <a href="#backend-arch" class="citation-link block py-1">5. Backend Architecture</a>
+          </li>
+          <li>
+            <a href="#database-layer" class="citation-link block py-1">6. Database & Persistence</a>
+          </li>
+          <li>
+            <a href="#ai-orchestration" class="citation-link block py-1">7. AI Orchestration (LangChain/LangGraph)</a>
+          </li>
+          <li>
+            <a href="#task-handling" class="citation-link block py-1">8. Task Handling & Asynchronous Operations</a>
+          </li>
+          <li>
+            <a href="#api-design" class="citation-link block py-1">9. API Design Patterns</a>
+          </li>
+          <li>
+            <a href="#hosting" class="citation-link block py-1">10. Cloud Hosting & Deployment</a>
+          </li>
+          <li>
+            <a href="#cost" class="citation-link block py-1">11. Cost Considerations</a>
+          </li>
+          <li>
+            <a href="#integrations" class="citation-link block py-1">12. Integrations & Ecosystem</a>
+          </li>
+          <li>
+            <a href="#dev-methodology" class="citation-link block py-1">13. Development Methodology</a>
+          </li>
+          <li>
+            <a href="#project-timeline" class="citation-link block py-1">14. Project Timeline & Deliverables</a>
+          </li>
+          <li>
+            <a href="#development-process" class="citation-link block py-1">15. Detailed Development Process</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Mobile TOC Toggle Button -->
+    <button id="toc-toggle" class="fixed top-4 left-4 z-50 lg:hidden bg-white p-2 rounded-full shadow-md">
+      <i class="fas fa-bars text-slate-800"></i>
+    </button>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Hero Section -->
+      <section id="hero" class="hero-bg min-h-screen flex items-center relative">
+        <div id="vanta-bg"></div>
+        <div class="hero-overlay absolute inset-0 z-10"></div>
+
+        <div class="hero-content container mx-auto px-6 relative z-20">
+          <div class="max-w-6xl">
+            <!-- Bento Grid Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+              <!-- Main Title Block -->
+              <div class="lg:col-span-2 space-y-8">
+                <div class="space-y-4">
+                  <h1 class="serif text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight">
+                    Evolve: An AI-Powered Learning Ecosystem
+                  </h1>
+                  <p class="text-xl text-slate-300 max-w-2xl">
+                    Revolutionizing first-year university learning through personalized AI tutoring and project-based pedagogy.
+                  </p>
+                </div>
+
+                <div class="flex flex-wrap gap-4 text-sm text-slate-400">
+                  <span><i class="fas fa-code mr-2"></i>TypeScript (Next.js) + Python (FastAPI)</span>
+                  <span><i class="fas fa-database mr-2"></i>Supabase (PostgreSQL, Realtime) + Redis</span>
+                  <span><i class="fas fa-brain mr-2"></i>LangChain & LangGraph AI Orchestration</span>
+                  <span><i class="fas fa-graduation-cap mr-2"></i>Project-Based Learning Focus</span>
+                </div>
+              </div>
+
+              <!-- Key Highlights Block -->
+              <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+                <h3 class="text-white font-semibold mb-4">Key Technologies</h3>
+                <div class="space-y-3 text-sm text-slate-300">
+                  <div class="flex justify-between">
+                    <span>Frontend Framework</span>
+                    <span class="font-mono">Next.js 14+ (React)</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Backend API</span>
+                    <span class="font-mono">Python (FastAPI)</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Database & BaaS</span>
+                    <span class="font-mono">Supabase (PostgreSQL)</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>AI Orchestration</span>
+                    <span class="font-mono">LangChain & LangGraph</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>UI Components</span>
+                    <span class="font-mono">shadcn/ui, Tailwind CSS</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Executive Summary -->
+      <section id="executive-summary" class="section-padding paper-bg">
+        <div class="container mx-auto px-6 max-w-4xl">
+          <h2 class="serif text-3xl font-bold text-slate-900 mb-8">Executive Summary</h2>
+
+          <div class="prose prose-lg max-w-none">
+            <p class="text-xl text-slate-700 mb-6 leading-relaxed">
+              Evolve is a cutting-edge SaaS educational platform designed to transform first-year university learning. It leverages AI-driven personalization and project-based pedagogy to help students master core STEM subjects. The platform emphasizes a "build once, scale later" principle, utilizing open-source technologies for cost-effectiveness and seamless scalability.
+            </p>
+
+            <div class="bento-grid">
+              <div class="bento-item">
+                <h3 class="text-lg font-semibold text-slate-900 mb-3">
+                  <i class="fas fa-lightbulb text-accent-orange mr-2"></i>
+                  AI-Driven Personalization
+                </h3>
+                <p class="text-slate-700">
+                  Evolve's AI core creates unique student profiles, adapting learning paths, offering contextual prompt suggestions, and providing citation-backed responses.
+                </p>
+              </div>
+
+              <div class="bento-item">
+                <h3 class="text-lg font-semibold text-slate-900 mb-3">
+                  <i class="fas fa-project-diagram text-accent-blue mr-2"></i>
+                  Project-Based Pedagogy
+                </h3>
+                <p class="text-slate-700">
+                  Students learn through hands-on projects, interactive visualizations, and dynamic mind maps, fostering deeper understanding and practical application.
+                </p>
+              </div>
+
+              <div class="bento-item">
+                <h3 class="text-lg font-semibold text-slate-900 mb-3">
+                  <i class="fas fa-wrench text-accent-mint-green mr-2"></i>
+                  Composable Open-Source Stack
+                </h3>
+                <p class="text-slate-700">
+                  Built on a Supabase + Next.js core with LangGraph microservices, Evolve favors open-source tools for technical feasibility and cost efficiency.
+                </p>
+              </div>
+            </div>
+            <p class="text-lg text-slate-700 mt-6 leading-relaxed">
+                Every proposed feature is technically feasible in 2025 using production-grade components, ensuring a transformative educational tool without a multimillion-dollar engineering budget. <a href="#tech-stack-overview" class="citation-link">[Executive Summary Evolve.pdf]</a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Design Principles & UI/UX -->
+      <section id="design-principles" class="section-padding">
+        <div class="container mx-auto px-6 max-w-4xl">
+          <h2 class="serif text-3xl font-bold text-slate-900 mb-8">1. Design Principles & UI/UX</h2>
+
+          <p class="text-lg text-slate-700 mb-8">
+            Evolve's visual identity is meticulously crafted around a "paper, black and white contrast, line art style," creating an "Analog-Digital Bridge" that connects traditional learning with interactive digital education. This aesthetic ensures instant recognition and fosters deep engagement. <a href="#" class="citation-link">[Evolve gemini.txt]</a>
+          </p>
+
+          <div class="space-y-8">
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-paint-brush text-accent-orange mr-2"></i>
+                Core Identity: Paper for Learning
+              </h3>
+              <p class="text-slate-700 mb-4">
+                The pervasive use of paper-like backgrounds and black-on-white line art illustrations (e.g., paper planes, pencils, rockets) evokes familiarity and a "Thought in Progress" aesthetic. Micro-interactions like "scribble" or "erase" on hover reinforce this. <a href="#" class="citation-link">[Perplexity.txt]</a>
+              </p>
+              <div class="bg-orange-50 p-3 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Visual Metaphors:</h4>
+                <ul class="text-sm text-slate-700 space-y-1">
+                  <li>• Paper-like backgrounds: Comfort, clean slate for learning</li>
+                  <li>• Black & White Contrast: Clarity, focus, professionalism</li>
+                  <li>• Line Art Style: Exploration, experimentation, iterative knowledge building</li>
+                  <li>• Hand-drawn elements: Personal touch, creative journey</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-font text-accent-blue mr-2"></i>
+                Typography: Readability & Style
+              </h3>
+              <p class="text-slate-700 mb-4">
+                Evolve balances academic credibility with its unique aesthetic using a maximum of two to three typefaces.
+              </p>
+              <div class="bg-blue-50 p-3 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Font Recommendations:</h4>
+                <ul class="text-sm text-slate-700 space-y-1">
+                  <li>• <strong>Headings (H1-H2):</strong> 'Crimson Text' (Serif) or 'Mission Script' (Cursive) for an elegant, textbook feel.</li>
+                  <li>• <strong>Body Text:</strong> 'Inter' or 'Open Sans' (Sans-serif) for high legibility on screens.</li>
+                  <li>• <strong>Accent/Quotes:</strong> 'Kalam' or 'Patrick Hand' (Hand-script) for note-like authenticity.</li>
+                </ul>
+                <p class="text-xs text-slate-600 mt-2">
+                    WCAG 2.2 guidelines for readability are followed (e.g., Body 17-18px). <a href="#" class="citation-link">[Perplexity.txt, Grok.txt]</a>
+                </p>
+              </div>
+            </div>
+
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-palette text-accent-mint-green mr-2"></i>
+                Color Palette: Dopamine Sparks
+              </h3>
+              <p class="text-slate-700 mb-4">
+                While primarily black and white, strategic accent colors are used sparingly to highlight, motivate, and guide the user, maximizing psychological impact. The 60-30-10 rule is applied. <a href="#" class="citation-link">[Evolve gemini.txt, Perplexity.txt]</a>
+              </p>
+              <div class="bg-mint-green-50 p-3 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Accent Hues & Impact:</h4>
+                <ul class="text-sm text-slate-700 space-y-1">
+                  <li>• <strong>Orange (#F6B740):</strong> Attention, urgency, motivation (CTAs).</li>
+                  <li>• <strong>Sky Blue (#4682B4):</strong> Calmness, focus, creativity (interactive elements, progress).</li>
+                  <li>• <strong>Mint Green (#98FB98):</strong> Concentration, growth (definitions, positive feedback).</li>
+                  <li>• <strong>Soft Pink (#FFB6C1):</strong> Tranquility, welcoming (subtle accents).</li>
+                  <li>• <strong>Red (#DC143C):</strong> Urgency, errors (use sparingly).</li>
+                </ul>
+                <p class="text-xs text-slate-600 mt-2">
+                    These colors trigger dopamine release, enhancing engagement and retention. <a href="#" class="citation-link">[Grok.txt]</a>
+                </p>
+              </div>
+            </div>
+
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-puzzle-piece text-accent-soft-pink mr-2"></i>
+                Interactive UI Elements
+              </h3>
+              <p class="text-slate-700 mb-4">
+                Evolve's UI elements are designed as "Interactive Sketchbook" tools, fostering active learning.
+              </p>
+              <div class="bg-pink-50 p-3 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Styling Approach:</h4>
+                <ul class="text-sm text-slate-700 space-y-1">
+                  <li>• <strong>Buttons:</strong> Dotted line borders, subtle "pressed paper" or "sketch" shadow on hover.</li>
+                  <li>• <strong>Input Fields:</strong> Lined paper background, "pencil sketch" animation on focus.</li>
+                  <li>• <strong>Navigation:</strong> Dotted line borders, line art underline for active items.</li>
+                  <li>• <strong>Cards/Blocks:</strong> Dotted borders, subtle paper texture overlay, hand-drawn shadows.</li>
+                  <li>• <strong>Icons:</strong> Custom hand-drawn SVGs (e.g., paper planes, light-bulbs, graduation caps).</li>
+                  <li>• <strong>Loading Indicators:</strong> Unique line art animations (e.g., virtual pencil sketching progress).</li>
+                </ul>
+                <p class="text-xs text-slate-600 mt-2">
+                    Gamification elements (sketched badges, line-art progress trackers) boost motivation. <a href="#" class="citation-link">[Evolve gemini.txt]</a>
+                </p>
+              </div>
+            </div>
+
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-universal-access text-accent-blue mr-2"></i>
+                Accessibility & Inclusivity
+              </h3>
+              <p class="text-slate-700 mb-4">
+                Evolve is committed to being inclusive and usable for all learners. A thorough accessibility audit will be conducted, paying particular attention to WCAG 2.2 guidelines.
+              </p>
+              <div class="bg-blue-50 p-3 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Key Accessibility Focus Areas:</h4>
+                <ul class="text-sm text-slate-700 space-y-1">
+                  <li>• <strong>Color Contrast Ratios:</strong> Ensuring high contrast for text and interactive elements.</li>
+                  <li>• <strong>Font Sizes:</strong> Providing legible default sizes with user-adjustable options.</li>
+                  <li>• <strong>Keyboard Navigation:</strong> Full functionality via keyboard, with clear focus indicators.</li>
+                  <li>• <strong>ARIA Roles:</strong> Proper semantic markup for screen readers.</li>
+                  <li>• <strong>Voice I/O:</strong> Complementing keyboard navigation for multimodal interaction.</li>
+                </ul>
+                <p class="text-xs text-slate-600 mt-2">
+                    Aligning with ethical design practices for an inclusive learning environment. <a href="#" class="citation-link">[Evolve gemini.txt, Grok.txt]</a>
+                </p>
+              </div>
+            </div>
+
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-chart-line text-accent-mint-green mr-2"></i>
+                Future UI/UX Refinement
+              </h3>
+              <p class="text-slate-700 mb-4">
+                Continuous UI/UX refinement will be driven by robust user feedback loops and data-driven optimization strategies.
+              </p>
+              <div class="bg-mint-green-50 p-3 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Strategies:</h4>
+                <ul class="text-sm text-slate-700 space-y-1">
+                  <li>• <strong>User Feedback Loops:</strong> In-app surveys, user interviews, usability testing sessions.</li>
+                  <li>• <strong>A/B Testing:</strong> For various UI elements, font pairings, and color accents to optimize engagement and learning outcomes.</li>
+                  <li>• <strong>Voice UI Integration:</strong> Explore seamless integration of voice commands, visually represented as "thought bubbles" being sketched on the canvas.</li>
+                </ul>
+                <p class="text-xs text-slate-600 mt-2">
+                    Iterative process based on real-world usage patterns and evolving student needs. <a href="#" class="citation-link">[Evolve gemini.txt]</a>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Core Features & Functionalities -->
+      <section id="core-features" class="section-padding paper-bg">
+        <div class="container mx-auto px-6 max-w-4xl">
+          <h2 class="serif text-3xl font-bold text-slate-900 mb-8">2. Core Features & Functionalities</h2>
+
+          <p class="text-lg text-slate-700 mb-8">
+            Evolve is built around a core of powerful, interconnected features designed to create a seamless, effective, and AI-augmented learning experience for first-year university students. <a href="#" class="citation-link">[Evolve.docx]</a>
+          </p>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <!-- Feature 1: Automated Prompt & Context Suggestions -->
+            <div class="feature-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-3">
+                <i class="fas fa-comment-dots text-accent-blue mr-2"></i>
+                Automated Prompt & Context Suggestions
+              </h3>
+              <p class="text-slate-700 text-sm">
+                As users type queries or upload documents, AI provides real-time suggestions for teaching modes (e.g., "spoon-feed," "questioner") before generating the answer. This uses RAG (Retrieval-Augmented Generation) to analyze context. <a href="#" class="citation-link">[Evolve Description.pdf, EVOLVE description.txt]</a>
+              </p>
+            </div>
+
+            <!-- Feature 2: NotebookLM-Style Discover & Mind Maps -->
+            <div class="feature-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-3">
+                <i class="fas fa-project-diagram text-accent-mint-green mr-2"></i>
+                NotebookLM-Style Discover & Mind Maps
+              </h3>
+              <p class="text-slate-700 text-sm">
+                A "Discover" feature crawls web sources, treating them as internal resources. Interactive mind maps visually summarize topics with clickable nodes revealing text, visuals, and references, akin to Google's NotebookLM. <a href="#" class="citation-link">[Evolve Description.pdf, EVOLVE description.txt]</a>
+              </p>
+            </div>
+
+            <!-- Feature 3: Perplexity-Style Citations -->
+            <div class="feature-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-3">
+                <i class="fas fa-quote-right text-accent-orange mr-2"></i>
+                Perplexity-Style Citations
+              </h3>
+              <p class="text-slate-700 text-sm">
+                Every AI response includes inline citations and clickable references (websites, PDFs, books) sourced from the web, similar to Perplexity AI, ensuring trustworthiness and deeper exploration. <a href="#" class="citation-link">[Evolve Description.pdf, EVOLVE description.txt]</a>
+              </p>
+            </div>
+
+            <!-- Feature 4: YouTube API Integration -->
+            <div class="feature-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-3">
+                <i class="fab fa-youtube text-critical-red mr-2"></i>
+                YouTube API Integration
+              </h3>
+              <p class="text-slate-700 text-sm">
+                Query terms trigger YouTube Data API calls, embedding top-ranked instructional videos directly inline within the learning interface for visual learning. <a href="#" class="citation-link">[Evolve Description.pdf, EVOLVE description.txt]</a>
+              </p>
+            </div>
+
+            <!-- Feature 5: Dynamic Diagrams & Visuals -->
+            <div class="feature-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-3">
+                <i class="fas fa-chart-area text-accent-blue mr-2"></i>
+                Dynamic Diagrams & Visuals
+              </h3>
+              <p class="text-slate-700 text-sm">
+                AI generates SVG code for conceptual diagrams (e.g., photosynthesis flow, data-structure graphs) and visualizers for algorithms, promoting highly visual learning. <a href="#" class="citation-link">[Evolve Description.pdf, EVOLVE description.txt]</a>
+              </p>
+            </div>
+
+            <!-- Feature 6: Web-Sourced Hyperlinks -->
+            <div class="feature-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-3">
+                <i class="fas fa-link text-accent-mint-green mr-2"></i>
+                Web-Sourced Hyperlinks
+              </h3>
+              <p class="text-slate-700 text-sm">
+                Responses are supplemented with direct hyperlinks to relevant web topics and resources, combining web search results with citation metadata. <a href="#" class="citation-link">[Evolve Description.pdf, EVOLVE description.txt]</a>
+              </p>
+            </div>
+
+            <!-- Feature 7: Dedicated Programming Pages -->
+            <div class="feature-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-3">
+                <i class="fas fa-laptop-code text-accent-orange mr-2"></i>
+                Dedicated Programming Pages
+              </h3>
+              <p class="text-slate-700 text-sm">
+                Separate pages for Data Structures & Algorithms (DSA) and Object-Oriented Programming (OOP) with integrated code editor, compiler, visualizations, and AI code assistant for practical learning. <a href="#" class="citation-link">[Evolve Description.pdf, EVOLVE description.txt]</a>
+              </p>
+            </div>
+
+            <!-- Feature 8: Image Retrieval -->
+            <div class="feature-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-3">
+                <i class="fas fa-image text-accent-soft-pink mr-2"></i>
+                Image Retrieval
+              </h3>
+              <p class="text-slate-700 text-sm">
+                Fetch relevant images from sources like Unsplash or Google Images for visual learning, displayed directly to the user. <a href="#" class="citation-link">[Evolve Description.pdf, EVOLVE description.txt]</a>
+              </p>
+            </div>
+
+            <!-- Feature 9: Voice I/O -->
+            <div class="feature-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-3">
+                <i class="fas fa-microphone-alt text-accent-blue mr-2"></i>
+                Voice Input/Output
+              </h3>
+              <p class="text-slate-700 text-sm">
+                Multimodal input allows speech-to-text prompt entry, and text-to-speech response playback, making the platform more accessible and convenient. <a href="#" class="citation-link">[Evolve Description.pdf, EVOLVE description.txt]</a>
+              </p>
+            </div>
+
+            <!-- Feature 10: Infinite Canvas with Node-Link Notes -->
+            <div class="feature-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-3">
+                <i class="fas fa-infinity text-accent-mint-green mr-2"></i>
+                Infinite Canvas with Node-Link Notes
+              </h3>
+              <p class="text-slate-700 text-sm">
+                A dedicated "infinite canvas" page for graph-style note linking (akin to Obsidian), where AI can summarize interconnected nodes, topics, and videos. <a href="#" class="citation-link">[Evolve Description.pdf, EVOLVE description.txt]</a>
+              </p>
+            </div>
+
+            <!-- Feature 11: Teaching Modes -->
+            <div class="feature-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-3">
+                <i class="fas fa-chalkboard-teacher text-accent-orange mr-2"></i>
+                Dynamic Teaching Modes
+              </h3>
+              <p class="text-slate-700 text-sm">
+                AI can adopt various personas like "Tutor," "Study Buddy," "Questioner," "Spoon-feeding," or "Practical Learning" to tailor response style and pedagogical approach based on user preference. <a href="#" class="citation-link">[Evolve Description.pdf, EVOLVE description.txt]</a>
+              </p>
+            </div>
+
+            <!-- Feature 12: Project-Based Learning (PBL) Suggestions -->
+            <div class="feature-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-3">
+                <i class="fas fa-lightbulb text-accent-blue mr-2"></i>
+                Project-Based Learning (PBL) Suggestions
+              </h3>
+              <p class="text-slate-700 text-sm">
+                Generates context-relevant project ideas based on the user's learning progress, supporting bookmarking and progress tracking for practical application of knowledge. <a href="#" class="citation-link">[Evolve Description.pdf, EVOLVE description.txt]</a>
+              </p>
+            </div>
+
+            <!-- Feature 13: Community & Social Features -->
+            <div class="feature-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-3">
+                <i class="fas fa-users text-accent-mint-green mr-2"></i>
+                Community & Social Features
+              </h3>
+              <p class="text-slate-700 text-sm">
+                Optional features include viewing other students' progress/achievements, sending friend requests, and a universal feedback stream/community forum moderated by admins, with leaderboards. <a href="#" class="citation-link">[Evolve Description.pdf, EVOLVE description.txt]</a>
+              </p>
+            </div>
+
+            <!-- Feature 14: Teacher Dashboard -->
+            <div class="feature-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-3">
+                <i class="fas fa-user-tie text-accent-orange mr-2"></i>
+                Teacher Dashboard
+              </h3>
+              <p class="text-slate-700 text-sm">
+                Subject-specific teacher consoles allow uploading materials, assigning projects, and posting announcements, with role-based access control (RBAC). <a href="#" class="citation-link">[Evolve Description.pdf, EVOLVE description.txt]</a>
+              </p>
+            </div>
+
+            <!-- Feature 15: LangChain & LangGraph Integration -->
+            <div class="feature-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-3">
+                <i class="fas fa-sitemap text-accent-blue mr-2"></i>
+                LangChain & LangGraph Integration
+              </h3>
+              <p class="text-slate-700 text-sm">
+                Utilizes LangChain for LLM orchestration and LangGraph for stateful, agentic workflows, enabling complex multi-step AI tasks like NotebookLM-style agents and PBL planners. <a href="#" class="citation-link">[Evolve Description.pdf, EVOLVE description.txt]</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Technology Stack Overview -->
+      <section id="tech-stack-overview" class="section-padding">
+        <div class="container mx-auto px-6 max-w-4xl">
+          <h2 class="serif text-3xl font-bold text-slate-900 mb-8">3. Technology Stack Overview</h2>
+
+          <p class="text-lg text-slate-700 mb-8">
+            Evolve employs a modern, scalable, and powerful technology stack, designed with a service-oriented architecture to allow for independent development and scaling.
+          </p>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-3">
+                <i class="fas fa-desktop text-accent-blue mr-2"></i>
+                Frontend
+              </h3>
+              <ul class="text-slate-700 space-y-2 text-sm">
+                <li>• <strong>Framework:</strong> Next.js (React)</li>
+                <li>• <strong>Language:</strong> TypeScript</li>
+                <li>• <strong>UI Components:</strong> shadcn/ui, Tailwind CSS</li>
+                <li>• <strong>State Management:</strong> React Query, Zustand</li>
+              </ul>
+            </div>
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-3">
+                <i class="fas fa-server text-accent-mint-green mr-2"></i>
+                Backend / API
+              </h3>
+              <ul class="text-slate-700 space-y-2 text-sm">
+                <li>• <strong>API Gateway:</strong> TypeScript (Node 18+)</li>
+                <li>• <strong>AI / Data Services:</strong> Python 3.12 (FastAPI)</li>
+                <li>• <strong>Edge Functions:</strong> Deno (optional, Supabase Edge)</li>
+                <li>• <strong>Scripting/Infra:</strong> Bash, Dockerfile, Terraform HCL</li>
+              </ul>
+            </div>
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-3">
+                <i class="fas fa-database text-accent-orange mr-2"></i>
+                Database & BaaS
+              </h3>
+              <ul class="text-slate-700 space-y-2 text-sm">
+                <li>• <strong>Primary DB:</strong> Supabase (PostgreSQL)</li>
+                <li>• <strong>Vector Search:</strong> pgvector (within Supabase)</li>
+                <li>• <strong>Object Storage:</strong> MinIO S3</li>
+                <li>• <strong>Cache/Queue:</strong> Redis</li>
+                <li>• <strong>Full-text Search:</strong> Typesense</li>
+              </ul>
+            </div>
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-3">
+                <i class="fas fa-brain text-accent-soft-pink mr-2"></i>
+                AI Orchestration
+              </h3>
+              <ul class="text-slate-700 space-y-2 text-sm">
+                <li>• <strong>LLM Orchestration:</strong> LangChain</li>
+                <li>• <strong>Agentic Workflows:</strong> LangGraph</li>
+                <li>• <strong>Foundation Models:</strong> Gemini, GPT-4 (via APIs), Mixtral 8x7B (local)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Frontend Architecture -->
+      <section id="frontend-arch" class="section-padding paper-bg">
+        <div class="container mx-auto px-6 max-w-4xl">
+          <h2 class="serif text-3xl font-bold text-slate-900 mb-8">4. Frontend Architecture</h2>
+
+          <p class="text-lg text-slate-700 mb-8">
+            Evolve's frontend is built with modern web technologies, focusing on performance, reusability, and a seamless user experience, all while adhering to the unique "paper and line art" design principles.
+          </p>
+
+          <div class="space-y-8">
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fab fa-react text-accent-blue mr-2"></i>
+                Next.js 14+ & React
+              </h3>
+              <p class="text-slate-700 mb-4">
+                Utilizing Next.js with React provides server-side rendering (SSR) for SEO, React Server Components (RSC) for performance, and a robust routing system.
+              </p>
+              <div class="bg-blue-50 p-3 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Key Advantages:</h4>
+                <ul class="text-sm text-slate-700 space-y-1">
+                  <li>• Optimized performance with SSR and static site generation</li>
+                  <li>• Efficient routing and layout management via App Router</li>
+                  <li>• Fast Hot Module Replacement (HMR) for development</li>
+                  <li>• Strong TypeScript support for type safety</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-paint-roller text-accent-mint-green mr-2"></i>
+                shadcn/ui & Tailwind CSS
+              </h3>
+              <p class="text-slate-700 mb-4">
+                Evolve leverages shadcn/ui for beautifully designed, accessible, and composable UI components, providing full control over styling, complemented by the utility-first approach of Tailwind CSS for rapid development.
+              </p>
+              <div class="bg-mint-green-50 p-3 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Design System Benefits:</h4>
+                <ul class="text-sm text-slate-700 space-y-1">
+                  <li>• Consistent UI/UX across the platform</li>
+                  <li>• Highly customizable components for unique branding</li>
+                  <li>• Accelerated UI development with utility classes</li>
+                  <li>• Focus on accessibility (ARIA roles, keyboard navigation)</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-sync-alt text-accent-orange mr-2"></i>
+                State Management: React Query & Zustand
+              </h3>
+              <p class="text-slate-700 mb-4">
+                React Query is used for data fetching, caching, and synchronization, reducing boilerplate. Zustand provides a lightweight and flexible solution for global state management.
+              </p>
+              <div class="bg-orange-50 p-3 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Benefits:</h4>
+                <ul class="text-sm text-slate-700 space-y-1">
+                  <li>• Efficient data fetching and revalidation</li>
+                  <li>• Simplified global state management</li>
+                  <li>• Improved performance and user experience</li>
+                  <li>• Reduced complexity compared to traditional state management libraries</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="highlight-box">
+              <p class="font-semibold text-slate-900 mb-2">
+                <i class="fas fa-cubes text-accent-blue mr-2"></i>
+                Modular Component Architecture
+              </p>
+              <p class="text-slate-700">
+                Evolve's frontend is built with an atomic design philosophy, breaking pages into reusable React components (atoms, molecules, organisms) and organizing features into lazy-loaded route segments for optimal performance and maintainability. <a href="#" class="citation-link">[Executive Summary Evolve.pdf]</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Backend Architecture -->
+      <section id="backend-arch" class="section-padding">
+        <div class="container mx-auto px-6 max-w-4xl">
+          <h2 class="serif text-3xl font-bold text-slate-900 mb-8">5. Backend Architecture</h2>
+
+          <p class="text-lg text-slate-700 mb-8">
+            Evolve operates a dual-backend system, leveraging the strengths of TypeScript (Node.js) for API Gateway and user-facing REST/GraphQL, and Python (FastAPI) for AI/data services. This microservice approach ensures scalability and specialized performance. <a href="#" class="citation-link">[Backend Blueprint for EVOLVE SaaS.pdf]</a>
+          </p>
+
+          <div class="grid md:grid-cols-2 gap-8 mb-8">
+            <div class="tech-card">
+              <div class="flex items-center mb-4">
+                <i class="fab fa-node-js text-accent-mint-green text-2xl mr-3"></i>
+                <h3 class="text-xl font-semibold text-slate-900">Node.js (TypeScript)</h3>
+              </div>
+              <p class="text-slate-700 mb-4">
+                Serves as the API Gateway and handles user-facing REST/GraphQL endpoints. Node.js 18+ with TypeScript provides a huge ecosystem and enables Server-Side Rendering (SSR) with the Next.js frontend.
+              </p>
+              <div class="bg-mint-green-50 p-3 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Responsibilities:</h4>
+                <ul class="text-sm text-slate-700 space-y-1">
+                  <li>• User authentication and session management</li>
+                  <li>• Handling standard API requests from frontend</li>
+                  <li>• Orchestrating communication with Python AI backend</li>
+                  <li>• SSR for Next.js pages</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="tech-card">
+              <div class="flex items-center mb-4">
+                <i class="fab fa-python text-accent-blue text-2xl mr-3"></i>
+                <h3 class="text-xl font-semibold text-slate-900">Python 3.12 (FastAPI)</h3>
+              </div>
+              <p class="text-slate-700 mb-4">
+                The powerhouse for all AI-related tasks, hosting AI models and exposing specific endpoints for text generation, RAG pipeline execution, knowledge graph processing, and voice I/O. FastAPI ensures high performance.
+              </p>
+              <div class="bg-blue-50 p-3 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Key Features:</h4>
+                <ul class="text-sm text-slate-700 space-y-1">
+                  <li>• Native LangChain/LangGraph integration</li>
+                  <li>• Access to extensive ML libraries</li>
+                  <li>• Asynchronous request handling (FastAPI)</li>
+                  <li>• Optimized for AI model inference</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <h3 class="serif text-2xl font-bold text-slate-900 mb-6 mt-10">Microservice Decomposition</h3>
+          <p class="text-lg text-slate-700 mb-8">
+            Evolve's backend is decomposed into several microservices, each handling specific functionalities, ensuring modularity and independent scaling. <a href="#" class="citation-link">[Backend Blueprint for EVOLVE SaaS.pdf]</a>
+          </p>
+
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="feature-card">
+              <h4 class="font-semibold text-slate-900 mb-2"><i class="fas fa-lock text-accent-orange mr-2"></i>Auth-Service</h4>
+              <p class="text-slate-700 text-sm">Handles user authentication (password, magic-link, social OAuth), rotates RSA-256 keys nightly. Persistence: PostgreSQL (Supabase).</p>
+            </div>
+            <div class="feature-card">
+              <h4 class="font-semibold text-slate-900 mb-2"><i class="fas fa-user-circle text-accent-blue mr-2"></i>User-Profile</h4>
+              <p class="text-slate-700 text-sm">Manages user profiles with Row-Level Security (RLS) policies via Supabase. Persistence: PostgreSQL.</p>
+            </div>
+            <div class="feature-card">
+              <h4 class="font-semibold text-slate-900 mb-2"><i class="fas fa-book-reader text-accent-mint-green mr-2"></i>Content RAG</h4>
+              <p class="text-slate-700 text-sm">Splits uploads, generates embeddings (pgvector), and sticks sources for citation. Persistence: PostgreSQL + Redis.</p>
+            </div>
+            <div class="feature-card">
+              <h4 class="font-semibold text-slate-900 mb-2"><i class="fas fa-robot text-accent-soft-pink mr-2"></i>LLM Gateway</h4>
+              <p class="text-slate-700 text-sm">Wraps models like Mixtral 8x7B, Stable-LM-Zephyr, Whisper.cpp. Provides a unified API for LLM inference.</p>
+            </div>
+            <div class="feature-card">
+              <h4 class="font-semibold text-slate-900 mb-2"><i class="fas fa-comments text-accent-orange mr-2"></i>Realtime Hub</h4>
+              <p class="text-slate-700 text-sm">Handles live cursor & chat events with <50ms latency via Supabase Realtime (Postgres-CDC).</p>
+            </div>
+            <div class="feature-card">
+              <h4 class="font-semibold text-slate-900 mb-2"><i class="fas fa-search text-accent-blue mr-2"></i>Search API</h4>
+              <p class="text-slate-700 text-sm">Provides fast prefix and semantic hybrid search using Typesense self-hosted cluster.</p>
+            </div>
+            <div class="feature-card">
+              <h4 class="font-semibold text-slate-900 mb-2"><i class="fas fa-images text-accent-mint-green mr-2"></i>Media Store</h4>
+              <p class="text-slate-700 text-sm">Secure, versioned, signed-URL uploads for media files using MinIO S3-API. Persistence: MinIO Disk.</p>
+            </div>
+            <div class="feature-card">
+              <h4 class="font-semibold text-slate-900 mb-2"><i class="fas fa-tasks text-accent-soft-pink mr-2"></i>Queue & Tasks</h4>
+              <p class="text-slate-700 text-sm">Manages fan-out emails, transcript jobs via NATS JetStream and Celery (Python). Persistence: Redis.</p>
+            </div>
+            <div class="feature-card">
+              <h4 class="font-semibold text-slate-900 mb-2"><i class="fas fa-chart-line text-accent-orange mr-2"></i>Observability</h4>
+              <p class="text-slate-700 text-sm">Monitors system health and performance using Prometheus + Grafana, with exporters for Node, Python, PostgreSQL.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Database Layer -->
+      <section id="database-layer" class="section-padding paper-bg">
+        <div class="container mx-auto px-6 max-w-4xl">
+          <h2 class="serif text-3xl font-bold text-slate-900 mb-8">6. Database & Persistence</h2>
+
+          <p class="text-lg text-slate-700 mb-8">
+            Evolve employs a sophisticated data persistence strategy combining a powerful relational database (PostgreSQL via Supabase), caching systems (Redis), and specialized vector databases for efficient handling of diverse data requirements. <a href="#" class="citation-link">[Backend Blueprint for EVOLVE SaaS.pdf]</a>
+          </p>
+
+          <div class="space-y-6">
+            <!-- Supabase (PostgreSQL) -->
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-database text-accent-blue mr-2"></i>
+                Supabase (PostgreSQL Database & BaaS)
+              </h3>
+              <p class="text-slate-700 mb-4">
+                Supabase is Evolve's chosen Backend as a Service (BaaS), providing a powerful PostgreSQL database, built-in authentication, real-time capabilities, and storage. It handles user data, course content, notes, and knowledge graph structures. <a href="#" class="citation-link">[Evolve.docx, Backend Blueprint for EVOLVE SaaS.pdf]</a>
+              </p>
+
+              <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-slate-900 mb-2">Key Supabase Features:</h4>
+                  <ul class="text-sm text-slate-700 space-y-1">
+                    <li>• PostgreSQL: Robust relational database</li>
+                    <li>• Authentication: Secure user authentication</li>
+                    <li>• Realtime: Live cursor & chat events (Postgres-CDC)</li>
+                    <li>• Storage: For user-uploaded files and generated assets (MinIO S3 API compatible)</li>
+                    <li>• Row-Level Security (RLS): Fine-grained data access control</li>
+                  </ul>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-slate-900 mb-2">Use Cases in Evolve:</h4>
+                  <ul class="text-sm text-slate-700 space-y-1">
+                    <li>• User profiles and progress tracking</li>
+                    <li>• Course syllabi and learning materials</li>
+                    <li>• Knowledge graph structure and note linking</li>
+                    <li>• Chat history and AI responses</li>
+                    <li>• Project-based learning data</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Redis -->
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-bolt text-accent-orange mr-2"></i>
+                Redis (Cache & Message Broker)
+              </h3>
+              <p class="text-slate-700 mb-4">
+                An in-memory data structure store serving as a caching layer for performance optimization and a message broker for Celery task queues. <a href="#" class="citation-link">[Backend Blueprint for EVOLVE SaaS.pdf]</a>
+              </p>
+
+              <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-orange-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-slate-900 mb-2">Caching Layer:</h4>
+                  <ul class="text-sm text-slate-700 space-y-1">
+                    <li>• Session data storage</li>
+                    <li>• Frequently accessed data</li>
+                    <li>• API response caching</li>
+                  </ul>
+                </div>
+                <div class="bg-orange-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-slate-900 mb-2">Message Broker:</h4>
+                  <ul class="text-sm text-slate-700 space-y-1">
+                    <li>• Celery task queue management</li>
+                    <li>• Pub/sub capabilities for real-time communication</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Vector Databases (pgvector & Typesense) -->
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-cube text-accent-mint-green mr-2"></i>
+                Vector Databases (pgvector & Typesense)
+              </h3>
+              <p class="text-slate-700 mb-4">
+                Evolve utilizes `pgvector` (a PostgreSQL extension) for efficient storage and querying of high-dimensional vector embeddings for AI applications, and Typesense for full-text and typo-tolerant search. <a href="#" class="citation-link">[Backend Blueprint for EVOLVE SaaS.pdf]</a>
+              </p>
+
+              <div class="bg-mint-green-50 p-4 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-3">Role in RAG Engine:</h4>
+                <p class="text-sm text-slate-700 mb-2">
+                  These technologies power Evolve's Retrieval Augmented Generation (RAG) engine, enabling semantic search and context-aware AI responses by efficiently querying document embeddings and providing fast search results.
+                </p>
+                <ul class="text-sm text-slate-700 space-y-1">
+                    <li>• <strong>pgvector:</strong> Handles embeddings for RAG pipeline.</li>
+                    <li>• <strong>Typesense:</strong> Provides <50ms prefix & semantic hybrid search.</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- MinIO S3 -->
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-hdd text-accent-soft-pink mr-2"></i>
+                MinIO S3 (Object Storage)
+              </h3>
+              <p class="text-slate-700 mb-4">
+                MinIO provides secure, versioned, signed-URL uploads for media files and other binary assets, offering an S3-compatible API for unlimited, on-any-disk/NAS storage. <a href="#" class="citation-link">[Backend Blueprint for EVOLVE SaaS.pdf]</a>
+              </p>
+              <div class="bg-pink-50 p-3 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Use Cases:</h4>
+                <ul class="text-sm text-slate-700 space-y-1">
+                  <li>• Storing user-uploaded documents and images</li>
+                  <li>• Archiving generated diagrams and visuals</li>
+                  <li>• Backups and large file storage</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- AI Orchestration (LangChain/LangGraph) -->
+      <section id="ai-orchestration" class="section-padding">
+        <div class="container mx-auto px-6 max-w-4xl">
+          <h2 class="serif text-3xl font-bold text-slate-900 mb-8">7. AI Orchestration (LangChain/LangGraph)</h2>
+
+          <p class="text-lg text-slate-700 mb-8">
+            Evolve leverages LangChain for LLM orchestration and LangGraph for complex, stateful, and agentic AI workflows, forming the backbone of its intelligent learning features. <a href="#" class="citation-link">[Evolve Description.pdf, Evolve.docx]</a>
+          </p>
+
+          <div class="space-y-8">
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-link text-accent-blue mr-2"></i>
+                LangChain: LLM Orchestration
+              </h3>
+              <p class="text-slate-700 mb-4">
+                LangChain provides high-level abstractions (chains, tools, agents) to connect large language models with external data sources and tools, enabling robust RAG pipelines and basic AI interactions. <a href="#" class="citation-link">[Evolve Description.pdf]</a>
+              </p>
+              <div class="bg-blue-50 p-3 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Key Applications:</h4>
+                <ul class="text-sm text-slate-700 space-y-1">
+                  <li>• Contextual prompt suggestions</li>
+                  <li>• Basic citation integration</li>
+                  <li>• Initial AI response generation</li>
+                  <li>• Connecting LLMs to vector databases for RAG</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-sitemap text-accent-mint-green mr-2"></i>
+                LangGraph: Agentic Workflows
+              </h3>
+              <p class="text-slate-700 mb-4">
+                For more complex, cyclical, and stateful AI workflows, LangGraph is essential. It allows defining AI workflows as graphs, providing fine-grained control and debugging capabilities for multi-step tasks. <a href="#" class="citation-link">[Evolve Description.pdf, Executive Summary Evolve.pdf]</a>
+              </p>
+              <div class="bg-mint-green-50 p-3 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Advanced Use Cases:</h4>
+                <ul class="text-sm text-slate-700 space-y-1">
+                  <li>• NotebookLM-style multi-document agents</li>
+                  <li>• Project-Based Learning (PBL) planners</li>
+                  <li>• Multi-persona AI tutors (e.g., Questioner, Spoon-feeder)</li>
+                  <li>• Complex data extraction and synthesis</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="highlight-box">
+              <p class="font-semibold text-slate-900 mb-2">
+                <i class="fas fa-robot text-accent-orange mr-2"></i>
+                Foundation Models Integration
+              </p>
+              <p class="text-slate-700">
+                Evolve integrates with high-performance LLMs like Gemini and GPT-4 via their APIs for core reasoning and generation tasks. For non-critical tasks, it can fallback to local models like Mixtral 8x7B to manage costs. <a href="#" class="citation-link">[Evolve.docx, Executive Summary Evolve.pdf]</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Task Handling -->
+      <section id="task-handling" class="section-padding paper-bg">
+        <div class="container mx-auto px-6 max-w-4xl">
+          <h2 class="serif text-3xl font-bold text-slate-900 mb-8">8. Task Handling & Asynchronous Operations</h2>
+
+          <p class="text-lg text-slate-700 mb-8">
+            Evolve employs Celery with Redis as a message broker to handle long-running or computationally intensive tasks asynchronously, ensuring a responsive user experience and efficient resource utilization. <a href="#" class="citation-link">[Backend Blueprint for EVOLVE SaaS.pdf]</a>
+          </p>
+
+          <div class="tech-card">
+            <div class="flex items-start justify-between mb-6">
+              <div>
+                <h3 class="text-xl font-semibold text-slate-900 mb-2">Celery (Asynchronous Task Queue)</h3>
+                <p class="text-slate-700">
+                  A distributed task queue system based on distributed message passing. Celery enables Evolve to offload resource-intensive operations from the main application thread.
+                </p>
+              </div>
+              <i class="fas fa-tasks text-accent-mint-green text-3xl"></i>
+            </div>
+
+            <div class="bg-mint-green-50 p-4 rounded-lg mb-6">
+              <h4 class="font-semibold text-slate-900 mb-3">Architecture Flow:</h4>
+              <div class="flex flex-wrap items-center justify-center gap-2 text-sm">
+                <div class="bg-white px-3 py-2 rounded border">FastAPI/Node.js App</div>
+                <i class="fas fa-arrow-right text-slate-400"></i>
+                <div class="bg-white px-3 py-2 rounded border">Redis Message Broker</div>
+                <i class="fas fa-arrow-right text-slate-400"></i>
+                <div class="bg-white px-3 py-2 rounded border">Celery Workers</div>
+                <i class="fas fa-arrow-right text-slate-400"></i>
+                <div class="bg-white px-3 py-2 rounded border">Task Execution</div>
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+              <div>
+                <h4 class="font-semibold text-slate-900 mb-3">Common Task Types:</h4>
+                <ul class="space-y-2 text-slate-700">
+                  <li class="flex items-start">
+                    <i class="fas fa-brain text-accent-blue mr-2 mt-1"></i>
+                    <span>AI model inference and processing</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-file-alt text-accent-mint-green mr-2 mt-1"></i>
+                    <span>Document ingestion and embedding generation</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-bell text-accent-orange mr-2 mt-1"></i>
+                    <span>Notification and alert delivery</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-microphone-alt text-accent-soft-pink mr-2 mt-1"></i>
+                    <span>Speech-to-text and text-to-speech processing</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 class="font-semibold text-slate-900 mb-3">Benefits:</h4>
+                <ul class="space-y-2 text-slate-700">
+                  <li class="flex items-start">
+                    <i class="fas fa-tachometer-alt text-accent-mint-green mr-2 mt-1"></i>
+                    <span>Improved application responsiveness</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-expand-arrows-alt text-accent-blue mr-2 mt-1"></i>
+                    <span>Horizontal scalability through worker pools</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-shield-alt text-accent-soft-pink mr-2 mt-1"></i>
+                    <span>Fault isolation for background tasks</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-clock text-accent-orange mr-2 mt-1"></i>
+                    <span>Efficient resource utilization during peak loads</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="pull-quote">
+            "By decoupling the main application from long-running operations, Celery enables Evolve to maintain performance and scalability, even when handling complex AI inference tasks."
+          </div>
+        </div>
+      </section>
+
+      <!-- API Design -->
+      <section id="api-design" class="section-padding">
+        <div class="container mx-auto px-6 max-w-4xl">
+          <h2 class="serif text-3xl font-bold text-slate-900 mb-8">9. API Design Patterns</h2>
+
+          <p class="text-lg text-slate-700 mb-8">
+            Evolve's architecture follows an API-first strategy, emphasizing clean, well-defined interfaces that facilitate integration and promote modular development across its microservices.
+          </p>
+
+          <div class="space-y-8">
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-code text-accent-blue mr-2"></i>
+                API-First Strategy
+              </h3>
+              <p class="text-slate-700 mb-4">
+                Development prioritizes API design and implementation before UI development, ensuring robust, consistent interfaces that serve both the platform's frontend and external integrations.
+              </p>
+
+              <div class="bg-blue-50 p-4 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Strategic Advantages:</h4>
+                <ul class="text-sm text-slate-700 space-y-1">
+                  <li>• Enables Backend as a Service (BaaS) positioning</li>
+                  <li>• Facilitates loose coupling between components</li>
+                  <li>• Promotes comprehensive API documentation (e.g., OpenAPI with FastAPI)</li>
+                  <li>• Supports multiple client types simultaneously</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-exchange-alt text-accent-mint-green mr-2"></i>
+                RESTful APIs
+              </h3>
+              <p class="text-slate-700 mb-4">
+                Standard HTTP methods and resource-oriented URLs provide predictable, easy-to-understand interfaces accessible from any programming language or platform.
+              </p>
+
+              <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-mint-green-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-slate-900 mb-2">Core Principles:</h4>
+                  <ul class="text-sm text-slate-700 space-y-1">
+                    <li>• Resource-based URL structure</li>
+                    <li>• Standard HTTP methods (GET, POST, PUT, DELETE)</li>
+                    <li>• Stateless communication</li>
+                    <li>• JSON payload format</li>
+                  </ul>
+                </div>
+                <div class="bg-mint-green-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-slate-900 mb-2">Expected Features:</h4>
+                  <ul class="text-sm text-slate-700 space-y-1">
+                    <li>• OpenAPI/Swagger specifications for auto-docs</li>
+                    <li>• Comprehensive documentation for every microservice</li>
+                    <li>• Authentication mechanisms (JWT, OAuth)</li>
+                    <li>• Rate limiting and quotas with Redis Token Bucket middleware</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="highlight-box">
+            <p class="font-semibold text-slate-900 mb-2">
+              <i class="fas fa-info-circle text-accent-blue mr-2"></i>
+              Implementation Impact
+            </p>
+            <p class="text-slate-700">
+              This API-centric approach allows the Next.js frontend to evolve independently from the FastAPI/Node.js backend, as long as the API contract is maintained, enabling faster iteration and deployment cycles.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Hosting -->
+      <section id="hosting" class="section-padding paper-bg">
+        <div class="container mx-auto px-6 max-w-4xl">
+          <h2 class="serif text-3xl font-bold text-slate-900 mb-8">10. Cloud Hosting & Deployment</h2>
+
+          <p class="text-lg text-slate-700 mb-8">
+            Evolve offers unparalleled deployment flexibility with options ranging from local development to scalable production environments, all built on cloud-agnostic principles. <a href="#" class="citation-link">[Backend Blueprint for EVOLVE SaaS.pdf]</a>
+          </p>
+
+          <div class="space-y-8">
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-code-branch text-accent-blue mr-2"></i>
+                Local Development (Docker Compose)
+              </h3>
+              <p class="text-slate-700 mb-4">
+                For local development, Evolve utilizes Docker Compose to spin up all necessary services (Postgres, MinIO, Redis, LocalAI, Typesense) in under 10 minutes, providing a consistent development environment.
+              </p>
+
+              <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-slate-900 mb-2">Getting Started:</h4>
+                  <ul class="text-sm text-slate-700 space-y-1">
+                    <li>• `git clone https://github.com/evolve/evolve-stack`</li>
+                    <li>• `cd evolve-stack && cp .env.example .env`</li>
+                    <li>• `docker compose up -d` (boots all services)</li>
+                    <li>• `pnpm dev` (gateway + FastAPI hot-reload)</li>
+                  </ul>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-slate-900 mb-2">Benefits:</h4>
+                  <ul class="text-sm text-slate-700 space-y-1">
+                    <li>• Rapid setup and environment consistency</li>
+                    <li>• Isolated development environment</li>
+                    <li>• Full control over local services</li>
+                    <li>• Mimics production environment closely</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-server text-accent-mint-green mr-2"></i>
+                Single-Node Production (CapRover)
+              </h3>
+              <p class="text-slate-700 mb-4">
+                For single-node production deployments, CapRover on a 1 vCPU / 2 GB VPS offers a cost-effective solution, allowing Evolve to run efficiently on a \$5 USD VPS.
+              </p>
+              <div class="bg-mint-green-50 p-3 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Cost & Scalability:</h4>
+                <ul class="text-sm text-slate-700 space-y-1">
+                  <li>• Estimated cost: ₹7400/month (for a typical VPS)</li>
+                  <li>• Suitable for initial production traffic</li>
+                  <li>• Seamless upgrade path to Kubernetes without rewrites</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-cloud-upload-alt text-accent-orange mr-2"></i>
+                Scale-Out & Edge Functions
+              </h3>
+              <p class="text-slate-700 mb-4">
+                For scaling out, Evolve can deploy on k3s + Longhorn, with MinIO distributed across multiple disks. Edge functions are deployed on Supabase Edge (Deno) for zero-config TS/JS at the edge.
+              </p>
+              <div class="bg-orange-50 p-3 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Advanced Deployment:</h4>
+                <ul class="text-sm text-slate-700 space-y-1">
+                  <li>• k3s + Longhorn: Runs on Raspberry Pi clusters for cost-effective scaling</li>
+                  <li>• Supabase Edge: Free for 500k invocations/month, ideal for low-latency edge logic</li>
+                  <li>• Backups: `wal-g` push to MinIO nightly for data integrity</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="highlight-box">
+              <p class="font-semibold text-slate-900 mb-2">
+                <i class="fas fa-globe text-accent-blue mr-2"></i>
+                Cloud-Agnostic Design
+              </p>
+              <p class="text-slate-700">
+                Evolve's architecture is designed to be portable across various cloud providers (AWS, Google Cloud, Azure) and on-premise environments, ensuring maximum deployment flexibility and preventing vendor lock-in.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cost Considerations -->
+      <section id="cost" class="section-padding">
+        <div class="container mx-auto px-6 max-w-4xl">
+          <h2 class="serif text-3xl font-bold text-slate-900 mb-8">11. Cost Considerations & Alternatives</h2>
+
+          <p class="text-lg text-slate-700 mb-8">
+            Evolve's open-source foundation provides multiple pathways for cost-effective deployment, with an estimated monthly cost of under ₹600 for thousands of monthly active users (MAU). <a href="#" class="citation-link">[Backend Blueprint for EVOLVE SaaS.pdf]</a>
+          </p>
+
+          <div class="space-y-8">
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-dollar-sign text-accent-mint-green mr-2"></i>
+                Approximate Monthly Cost (5,000 MAU)
+              </h3>
+              <p class="text-slate-700 mb-4">
+                Leveraging free tiers and self-hosting, Evolve aims for minimal operational expenses.
+              </p>
+
+              <div class="overflow-x-auto">
+                <table class="min-w-full bg-white rounded-lg shadow-sm">
+                  <thead>
+                    <tr class="bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th class="py-3 px-4 rounded-tl-lg">Component</th>
+                      <th class="py-3 px-4">Option</th>
+                      <th class="py-3 px-4">Free Tier</th>
+                      <th class="py-3 px-4">Expected Usage</th>
+                      <th class="py-3 px-4 rounded-tr-lg">Cost (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200">
+                    <tr>
+                      <td class="py-3 px-4">Supabase DB</td>
+                      <td class="py-3 px-4">Free Plan</td>
+                      <td class="py-3 px-4">500 MB</td>
+                      <td class="py-3 px-4">400 MB</td>
+                      <td class="py-3 px-4">₹0</td>
+                    </tr>
+                    <tr>
+                      <td class="py-3 px-4">Supabase Edge / Realtime</td>
+                      <td class="py-3 px-4">Free</td>
+                      <td class="py-3 px-4">2 GB egress</td>
+                      <td class="py-3 px-4">1 GB</td>
+                      <td class="py-3 px-4">₹0</td>
+                    </tr>
+                    <tr>
+                      <td class="py-3 px-4">MinIO on 100 GB VPS</td>
+                      <td class="py-3 px-4">Hetzner CX21</td>
+                      <td class="py-3 px-4"></td>
+                      <td class="py-3 px-4">100 GB</td>
+                      <td class="py-3 px-4">₹350</td>
+                    </tr>
+                    <tr>
+                      <td class="py-3 px-4">LocalAI on same VPS</td>
+                      <td class="py-3 px-4"></td>
+                      <td class="py-3 px-4"></td>
+                      <td class="py-3 px-4">CPU</td>
+                      <td class="py-3 px-4">₹0</td>
+                    </tr>
+                    <tr>
+                      <td class="py-3 px-4">Typesense, Redis, NATS</td>
+                      <td class="py-3 px-4">on same VPS</td>
+                      <td class="py-3 px-4"></td>
+                      <td class="py-3 px-4"></td>
+                      <td class="py-3 px-4">₹0</td>
+                    </tr>
+                    <tr>
+                      <td class="py-3 px-4">GitHub Actions</td>
+                      <td class="py-3 px-4">OSS minutes</td>
+                      <td class="py-3 px-4">2000/mo</td>
+                      <td class="py-3 px-4">800</td>
+                      <td class="py-3 px-4">₹0</td>
+                    </tr>
+                    <tr>
+                      <td class="py-3 px-4">Monitoring (Prom + Grafana)</td>
+                      <td class="py-3 px-4">Free</td>
+                      <td class="py-3 px-4">10k series</td>
+                      <td class="py-3 px-4">5k</td>
+                      <td class="py-3 px-4">₹0</td>
+                    </tr>
+                    <tr>
+                      <td class="py-3 px-4">Backups to another VPS</td>
+                      <td class="py-3 px-4">rsync weekly</td>
+                      <td class="py-3 px-4"></td>
+                      <td class="py-3 px-4">100 GB</td>
+                      <td class="py-3 px-4">₹200</td>
+                    </tr>
+                    <tr class="font-bold bg-gray-50">
+                      <td class="py-3 px-4 rounded-bl-lg" colspan="4">TOTAL ESTIMATED MONTHLY COST</td>
+                      <td class="py-3 px-4 rounded-br-lg">= ₹550/month</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="text-sm text-slate-700 mt-4">
+                All optional cloud APIs (OpenAI, Deepgram, etc.) can be toggled off to remain 100% cost-free.
+              </p>
+            </div>
+
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-server text-accent-blue mr-2"></i>
+                Self-Hosting for Unlimited Usage
+              </h3>
+              <p class="text-slate-700 mb-4">
+                For truly unlimited usage at the lowest possible cost, self-hosting on controlled infrastructure provides maximum flexibility and cost predictability.
+              </p>
+
+              <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-slate-900 mb-2">Cost-Effective VPS Options:</h4>
+                  <ul class="text-sm text-slate-700 space-y-1">
+                    <li>• DigitalOcean: $4-12/month</li>
+                    <li>• Linode: $5-15/month</li>
+                    <li>• Hetzner: €3.49-15/month</li>
+                    <li>• Vultr: $2.50-12/month</li>
+                  </ul>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-slate-900 mb-2">Self-Hosting Benefits:</h4>
+                  <ul class="text-sm text-slate-700 space-y-1">
+                    <li>• Predictable monthly costs</li>
+                    <li>• No usage-based pricing</li>
+                    <li>• Full configuration control</li>
+                    <li>• Data sovereignty and privacy</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="mt-4 p-4 bg-orange-50 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Operational Considerations:</h4>
+                <p class="text-sm text-slate-700">
+                  Self-hosting requires technical expertise for server maintenance, security patching, backups, and troubleshooting. Consider the trade-off between cost savings and operational overhead.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="highlight-box">
+            <p class="font-semibold text-slate-900 mb-2">
+              <i class="fas fa-calculator text-accent-blue mr-2"></i>
+              Total Cost of Ownership Analysis
+            </p>
+            <p class="text-slate-700">
+              While self-hosting offers the lowest direct costs, organizations should factor in operational overhead, expertise requirements, and scalability needs when choosing their deployment strategy.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Integrations -->
+      <section id="integrations" class="section-padding paper-bg">
+        <div class="container mx-auto px-6 max-w-4xl">
+          <h2 class="serif text-3xl font-bold text-slate-900 mb-8">12. Integrations & Ecosystem</h2>
+
+          <p class="text-lg text-slate-700 mb-8">
+            Evolve's strength lies in its extensive ecosystem support, enabling developers to build highly customized AI applications with seamless integrations across models, services, and knowledge management systems.
+          </p>
+
+          <div class="space-y-8">
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-brain text-accent-blue mr-2"></i>
+                AI Model Support
+              </h3>
+              <p class="text-slate-700 mb-4">
+                Comprehensive integration with leading AI models from major providers and open-source alternatives, providing flexibility in model selection based on cost, performance, and capabilities. <a href="#" class="citation-link">[Backend Blueprint for EVOLVE SaaS.pdf]</a>
+              </p>
+
+              <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-slate-900 mb-2">Proprietary Models:</h4>
+                  <div class="space-y-2">
+                    <div class="flex items-center">
+                      <i class="fab fa-openid text-accent-mint-green mr-2"></i>
+                      <span class="text-sm text-slate-700">OpenAI GPT Series</span>
+                    </div>
+                    <div class="flex items-center">
+                      <i class="fas fa-robot text-accent-orange mr-2"></i>
+                      <span class="text-sm text-slate-700">Anthropic Claude Series</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-gem text-accent-blue mr-2"></i>
+                        <span class="text-sm text-slate-700">Google Gemini</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="bg-mint-green-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-slate-900 mb-2">Open Source Models:</h4>
+                  <div class="space-y-2">
+                    <div class="flex items-center">
+                      <i class="fab fa-meta text-accent-orange mr-2"></i>
+                      <span class="text-sm text-slate-700">Llama 2 & Derivatives</span>
+                    </div>
+                    <div class="flex items-center">
+                      <i class="fas fa-cube text-accent-blue mr-2"></i>
+                      <span class="text-sm text-slate-700">Hugging Face Models (e.g., Mixtral 8x7B)</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-microphone-alt text-accent-soft-pink mr-2"></i>
+                        <span class="text-sm text-slate-700">Whisper.cpp (Speech-to-Text)</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-volume-up text-accent-mint-green mr-2"></i>
+                        <span class="text-sm text-slate-700">Coqui-TTS (Text-to-Speech)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Unified Interface Benefits:</h4>
+                <p class="text-sm text-slate-700">
+                  Evolve abstracts the complexities of different model APIs, providing consistent interfaces for prompt engineering, inference, and output management across all supported models.
+                </p>
+              </div>
+            </div>
+
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-puzzle-piece text-accent-orange mr-2"></i>
+                Drop-In Feature Modules & Plugins
+              </h3>
+              <p class="text-slate-700 mb-4">
+                Evolve supports a "plug & play" approach with drop-in feature modules, enabling rapid integration of advanced functionalities. <a href="#" class="citation-link">[Backend Blueprint for EVOLVE SaaS.pdf]</a>
+              </p>
+
+              <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="bg-orange-50 p-4 rounded-lg text-center">
+                  <i class="fas fa-code text-accent-orange text-2xl mb-2"></i>
+                  <h4 class="font-semibold text-slate-900 mb-2">Code Sandbox</h4>
+                  <p class="text-xs text-slate-700">WASM-running "Paiza-io" fork (Integration: 1 day)</p>
+                </div>
+                <div class="bg-orange-50 p-4 rounded-lg text-center">
+                  <i class="fas fa-expand text-accent-orange text-2xl mb-2"></i>
+                  <h4 class="font-semibold text-slate-900 mb-2">Infinite Canvas</h4>
+                  <p class="text-xs text-slate-700">tldraw + y-js (Integration: 0.5 day)</p>
+                </div>
+                <div class="bg-orange-50 p-4 rounded-lg text-center">
+                  <i class="fas fa-trophy text-accent-orange text-2xl mb-2"></i>
+                  <h4 class="font-semibold text-slate-900 mb-2">Leaderboard & Badges</h4>
+                  <p class="text-xs text-slate-700">Orbit-DB or Supabase functions (Integration: 0.5 day)</p>
+                </div>
+                <div class="bg-orange-50 p-4 rounded-lg text-center">
+                  <i class="fas fa-comments text-accent-orange text-2xl mb-2"></i>
+                  <h4 class="font-semibold text-slate-900 mb-2">Forum & Comments</h4>
+                  <p class="text-xs text-slate-700">Fider (Go) embedded iframe (Integration: 1 hour)</p>
+                </div>
+                <div class="bg-orange-50 p-4 rounded-lg text-center">
+                  <i class="fas fa-calculator text-accent-orange text-2xl mb-2"></i>
+                  <h4 class="font-semibold text-slate-900 mb-2">Math Rendering</h4>
+                  <p class="text-xs text-slate-700">KaTeX serverless (Integration: instant)</p>
+                </div>
+                <div class="bg-orange-50 p-4 rounded-lg text-center">
+                  <i class="fas fa-chart-bar text-accent-orange text-2xl mb-2"></i>
+                  <h4 class="font-semibold text-slate-900 mb-2">Analytics</h4>
+                  <p class="text-xs text-slate-700">Plausible self-host (Integration: 1 hour)</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-search text-accent-mint-green mr-2"></i>
+                Knowledge Management (RAG Engine)
+              </h3>
+              <p class="text-slate-700 mb-4">
+                Built-in Retrieval Augmented Generation (RAG) engine enables context-aware AI applications by integrating custom knowledge bases with LLM capabilities. This pipeline involves ingesting documents, chunking and embedding them into vector storage (pgvector), and performing semantic search for context augmentation. <a href="#" class="citation-link">[Backend Blueprint for EVOLVE SaaS.pdf]</a>
+              </p>
+
+              <div class="bg-mint-green-50 p-4 rounded-lg mb-4">
+                <h4 class="font-semibold text-slate-900 mb-3">Document Processing Pipeline:</h4>
+                <div class="flex flex-wrap items-center justify-center gap-2 text-sm">
+                  <div class="bg-white px-3 py-2 rounded border">Document Ingestion</div>
+                  <i class="fas fa-arrow-right text-slate-400"></i>
+                  <div class="bg-white px-3 py-2 rounded border">Chunking & Embedding</div>
+                  <i class="fas fa-arrow-right text-slate-400"></i>
+                  <div class="bg-white px-3 py-2 rounded border">Vector Storage (pgvector)</div>
+                  <i class="fas fa-arrow-right text-slate-400"></i>
+                  <div class="bg-white px-3 py-2 rounded border">Semantic Search</div>
+                  <i class="fas fa-arrow-right text-slate-400"></i>
+                  <div class="bg-white px-3 py-2 rounded border">Context Augmentation</div>
+                </div>
+              </div>
+
+              <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-mint-green-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-slate-900 mb-2">Supported Formats:</h4>
+                  <ul class="text-sm text-slate-700 space-y-1">
+                    <li>• Text files (.txt, .md)</li>
+                    <li>• PDF documents</li>
+                    <li>• Web page content</li>
+                    <li>• Structured data exports</li>
+                  </ul>
+                </div>
+                <div class="bg-mint-green-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-slate-900 mb-2">RAG Benefits:</h4>
+                  <ul class="text-sm text-slate-700 space-y-1">
+                    <li>• More accurate AI responses</li>
+                    <li>• Up-to-date information</li>
+                    <li>• Domain-specific knowledge</li>
+                    <li>• Reduced hallucination</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-users text-accent-soft-pink mr-2"></i>
+                Developer Community & Application Builds
+              </h3>
+              <p class="text-slate-700 mb-4">
+                An active developer community contributes to Evolve's evolution through code contributions, documentation improvements, and shared application examples.
+              </p>
+
+              <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-pink-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-slate-900 mb-2">Community Channels:</h4>
+                  <ul class="text-sm text-slate-700 space-y-1">
+                    <li>• GitHub repositories and issues</li>
+                    <li>• Discord community servers</li>
+                    <li>• Documentation contributions</li>
+                    <li>• Tutorial and example sharing</li>
+                  </ul>
+                </div>
+                <div class="bg-pink-50 p-4 rounded-lg">
+                  <h4 class="font-semibold text-slate-900 mb-2">Collaboration Benefits:</h4>
+                  <ul class="text-sm text-slate-700 space-y-1">
+                    <li>• Accelerated platform development</li>
+                    <li>• Shared best practices</li>
+                    <li>• Collective troubleshooting</li>
+                    <li>• Feature prioritization feedback</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="mt-4 p-4 bg-orange-50 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Growing Ecosystem:</h4>
+                <p class="text-sm text-slate-700">
+                  As developers create applications using Evolve, they contribute to a growing ecosystem of AI solutions, showcasing platform capabilities and providing inspiration for new use cases.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="pull-quote">
+            "Evolve's extensive integration ecosystem transforms it from a standalone platform into a comprehensive AI development environment, enabling developers to build sophisticated applications without starting from scratch."
+          </div>
+        </div>
+      </section>
+
+      <!-- Development Methodology -->
+      <section id="dev-methodology" class="section-padding">
+        <div class="container mx-auto px-6 max-w-4xl">
+          <h2 class="serif text-3xl font-bold text-slate-900 mb-8">13. Development Methodology & Roadmap</h2>
+
+          <p class="text-lg text-slate-700 mb-8">
+            Evolve's development follows a modular, iterative approach, ensuring rapid feature delivery, high quality, and continuous improvement. <a href="#" class="citation-link">[Evolve Description.pdf]</a>
+          </p>
+
+          <div class="space-y-8">
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-layer-group text-accent-blue mr-2"></i>
+                Modular Architecture
+              </h3>
+              <p class="text-slate-700 mb-4">
+                The platform is designed with componentized UI (reusable React components) and microservices (separate AI inference in Python, web API in Node.js) with clear REST/gRPC boundaries.
+              </p>
+              <div class="bg-blue-50 p-3 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Benefits:</h4>
+                <ul class="text-sm text-slate-700 space-y-1">
+                  <li>• Independent development and deployment of services</li>
+                  <li>• Enhanced scalability and fault isolation</li>
+                  <li>• Improved code organization and maintainability</li>
+                  <li>• Facilitates team collaboration</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-redo-alt text-accent-mint-green mr-2"></i>
+                Iterative MVPs & Phased Rollout
+              </h3>
+              <p class="text-slate-700 mb-4">
+                Features are delivered in weekly "thin slices" through an iterative MVP approach, allowing for continuous feedback and adaptation. <a href="#" class="citation-link">[Evolve Description.pdf, Executive Summary Evolve.pdf]</a>
+              </p>
+              <div class="bg-mint-green-50 p-3 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Roadmap Phases:</h4>
+                <ul class="text-sm text-slate-700 space-y-1">
+                  <li>• <strong>Phase 1 (Sprint 1-2):</strong> Chat UI, prompt suggestions, basic citation.</li>
+                  <li>• <strong>Phase 2 (Sprint 3-4):</strong> Media embeds, diagram generation.</li>
+                  <li>• <strong>Phase 3 (Sprint 5-7):</strong> Mind map canvas, PBL module.</li>
+                  <li>• <strong>Phase 4 (Sprint 8-10):</strong> Teacher dashboard, profiles, community feed, Voice I/O, LangGraph agents.</li>
+                  <li>• <strong>End-to-end MVP:</strong> 12 weeks total.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-code-commit text-accent-orange mr-2"></i>
+                Version Control & CI/CD
+              </h3>
+              <p class="text-slate-700 mb-4">
+                A Turborepo monorepo manages frontend/backend code. Automated tests (Jest, Cypress, Lighthouse) and GitHub Actions pipelines ensure code quality and efficient deployments to staging & production.
+              </p>
+              <div class="bg-orange-50 p-3 rounded-lg">
+                <h4 class="font-semibold text-slate-900 mb-2">Practices:</h4>
+                <ul class="text-sm text-slate-700 space-y-1">
+                  <li>• Monorepo for unified codebase management</li>
+                  <li>• Comprehensive automated testing (unit, E2E, performance)</li>
+                  <li>• CI/CD pipelines for test, lint, and deploy</li>
+                  <li>• GitHub Actions for continuous integration and delivery</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="highlight-box">
+              <p class="font-semibold text-slate-900 mb-2">
+                <i class="fas fa-shield-alt text-accent-blue mr-2"></i>
+                Data Privacy & Security
+              </p>
+              <p class="text-slate-700">
+                Evolve implements Row-Level Security (RLS) policies in Supabase, limits OAuth scopes, and aims for GDPR and COPPA compliance (no under-13 data capture). User uploads are stored in isolated S3 buckets. <a href="#" class="citation-link">[Evolve Description.pdf, Executive Summary Evolve.pdf]</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Project Timeline & Deliverables -->
+      <section id="project-timeline" class="section-padding paper-bg">
+        <div class="container mx-auto px-6 max-w-4xl">
+          <h2 class="serif text-3xl font-bold text-slate-900 mb-8">14. Project Timeline & Deliverables</h2>
+
+          <p class="text-lg text-slate-700 mb-8">
+            Evolve's development roadmap is structured into a 3-month timeline, with a key MVP deliverable targeted for completion within the first month. This phased approach ensures rapid iteration and continuous value delivery.
+          </p>
+
+          <div class="timeline-container">
+            <div class="timeline-line"></div>
+            <!-- Month 1 / Sprint 1-2: MVP Focus -->
+            <div class="timeline-item">
+              <div class="timeline-icon bg-accent-blue"><i class="fas fa-calendar-alt"></i></div>
+              <div class="timeline-item-content">
+                <h3 class="text-xl font-semibold text-slate-900 mb-2">Month 1: Core MVP & Foundations</h3>
+                <p class="text-slate-700 mb-2"><strong>Target:</strong> Deliver core chat functionality and foundational AI integrations.</p>
+                <ul class="list-disc list-inside text-sm text-slate-700 space-y-1">
+                  <li><strong>Sprint 1:</strong> Chat UI, prompt suggestions, basic citation layer.</li>
+                  <li><strong>Sprint 2:</strong> Media embeds (videos/images), diagram generation.</li>
+                </ul>
+                <p class="text-xs text-slate-600 mt-2">
+                    This phase focuses on establishing the primary user interaction and initial AI capabilities. <a href="#" class="citation-link">[Evolve Description.pdf, Executive Summary Evolve.pdf]</a>
+                </p>
+              </div>
+            </div>
+
+            <!-- Month 2 / Sprint 3-4: Interactive Learning -->
+            <div class="timeline-item">
+              <div class="timeline-icon bg-accent-mint-green"><i class="fas fa-lightbulb"></i></div>
+              <div class="timeline-item-content">
+                <h3 class="text-xl font-semibold text-slate-900 mb-2">Month 2: Interactive Learning & PBL</h3>
+                <p class="text-slate-700 mb-2"><strong>Target:</strong> Introduce advanced interactive learning tools and project-based learning support.</p>
+                <ul class="list-disc list-inside text-sm text-slate-700 space-y-1">
+                  <li><strong>Sprint 3:</strong> Mind map canvas, PBL module.</li>
+                  <li><strong>Sprint 4:</strong> Teacher dashboard, profiles, community feed.</li>
+                </ul>
+                <p class="text-xs text-slate-600 mt-2">
+                    Enhancing visual learning and facilitating collaborative and project-oriented pedagogy. <a href="#" class="citation-link">[Evolve Description.pdf, Executive Summary Evolve.pdf]</a>
+                </p>
+              </div>
+            </div>
+
+            <!-- Month 3 / Sprint 5-6: Advanced AI & Community -->
+            <div class="timeline-item">
+              <div class="timeline-icon bg-accent-orange"><i class="fas fa-rocket"></i></div>
+              <div class="timeline-item-content">
+                <h3 class="text-xl font-semibold text-slate-900 mb-2">Month 3: Voice I/O & Agent Integration</h3>
+                <p class="text-slate-700 mb-2"><strong>Target:</strong> Implement multimodal interaction and advanced AI agent workflows.</p>
+                <ul class="list-disc list-inside text-sm text-slate-700 space-y-1">
+                  <li><strong>Sprint 5:</strong> Voice I/O, LangGraph agent integration.</li>
+                  <li><strong>Sprint 6:</strong> Final polish, security audit, and launch readiness.</li>
+                </ul>
+                <p class="text-xs text-slate-600 mt-2">
+                    Bringing the platform to full maturity with cutting-edge AI capabilities and robust security. <a href="#" class="citation-link">[Evolve Description.pdf, Executive Summary Evolve.pdf]</a>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Detailed Development Process -->
+      <section id="development-process" class="section-padding">
+        <div class="container mx-auto px-6 max-w-4xl">
+          <h2 class="serif text-3xl font-bold text-slate-900 mb-8">15. Detailed Development Process</h2>
+
+          <p class="text-lg text-slate-700 mb-8">
+            The development of Evolve follows a structured, agile process, moving from design and UI/UX to frontend implementation, and then to robust backend development. This ensures a cohesive and efficient workflow.
+          </p>
+
+          <div class="space-y-8">
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-pencil-ruler text-accent-blue mr-2"></i>
+                Phase 1: UI/UX Design & Prototyping (Weeks 1-2)
+              </h3>
+              <p class="text-slate-700 mb-4">
+                This initial phase focuses on defining the user experience and visual design, translating concepts into tangible prototypes.
+              </p>
+              <ul class="list-disc list-inside text-sm text-slate-700 space-y-1">
+                <li><strong>Week 1:</strong>
+                  <ul class="list-circle list-inside ml-4">
+                    <li>Define user flows and wireframes for core features (chat, mind maps).</li>
+                    <li>Finalize typography, color palette, and core visual identity.</li>
+                    <li>Create low-fidelity mockups for key screens.</li>
+                  </ul>
+                </li>
+                <li><strong>Week 2:</strong>
+                  <ul class="list-circle list-inside ml-4">
+                    <li>Develop high-fidelity UI designs for MVP features (chat, prompt suggestions, basic citations).</li>
+                    <li>Create interactive prototypes (Figma/Sketch).</li>
+                    <li>Conduct initial usability testing with target users.</li>
+                    <li>Gather feedback and iterate on designs.</li>
+                  </ul>
+                </li>
+              </ul>
+              <p class="text-xs text-slate-600 mt-2">
+                Tools: Figma, Sketch, Adobe XD. Focus on user-centered design and iterative feedback.
+              </p>
+            </div>
+
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-code text-accent-mint-green mr-2"></i>
+                Phase 2: Frontend Development (Weeks 3-8)
+              </h3>
+              <p class="text-slate-700 mb-4">
+                Translating approved UI/UX designs into functional, responsive web interfaces using Next.js, React, and Tailwind CSS.
+              </p>
+              <ul class="list-disc list-inside text-sm text-slate-700 space-y-1">
+                <li><strong>Week 3-4 (MVP Frontend):</strong>
+                  <ul class="list-circle list-inside ml-4">
+                    <li>Set up Next.js project structure, integrate Tailwind CSS and shadcn/ui.</li>
+                    <li>Implement core chat UI, prompt suggestion components.</li>
+                    <li>Develop basic citation display and linking.</li>
+                    <li>Integrate client-side data fetching (React Query).</li>
+                  </ul>
+                </li>
+                <li><strong>Week 5-6 (Interactive Features Frontend):</strong>
+                  <ul class="list-circle list-inside ml-4">
+                    <li>Develop interactive mind map canvas components (tldraw integration).</li>
+                    <li>Implement media embed display (YouTube player integration).</li>
+                    <li>Build dynamic diagram rendering components (SVG/Chart.js).</li>
+                  </ul>
+                </li>
+                <li><strong>Week 7-8 (Advanced Features Frontend):</strong>
+                  <ul class="list-circle list-inside ml-4">
+                    <li>Develop programming page UI (code editor, compiler output).</li>
+                    <li>Implement infinite canvas for node-link notes.</li>
+                    <li>Integrate voice input/output UI elements.</li>
+                    <li>Refine overall responsiveness and cross-browser compatibility.</li>
+                  </ul>
+                </li>
+              </ul>
+              <p class="text-xs text-slate-600 mt-2">
+                Tools: VS Code, Next.js, React, TypeScript, Tailwind CSS, shadcn/ui, React Query, Zustand. Emphasis on modularity and performance.
+              </p>
+            </div>
+
+            <div class="tech-card">
+              <h3 class="text-xl font-semibold text-slate-900 mb-4">
+                <i class="fas fa-server text-accent-orange mr-2"></i>
+                Phase 3: Backend & AI Integration (Weeks 9-12)
+              </h3>
+              <p class="text-slate-700 mb-4">
+                Developing the robust backend services, AI pipelines, and database integrations to power Evolve's intelligent features.
+              </p>
+              <ul class="list-disc list-inside text-sm text-slate-700 space-y-1">
+                <li><strong>Week 9-10 (Core Backend & Auth):</strong>
+                  <ul class="list-circle list-inside ml-4">
+                    <li>Set up FastAPI (Python) and Node.js API Gateway.</li>
+                    <li>Implement Supabase authentication and user profile management.</li>
+                    <li>Develop initial RAG pipeline for document ingestion and embedding (pgvector).</li>
+                    <li>Establish communication between frontend and backend APIs.</li>
+                  </ul>
+                </li>
+                <li><strong>Week 11-12 (AI & Advanced Services):</strong>
+                  <ul class="list-circle list-inside ml-4">
+                    <li>Integrate LangChain/LangGraph for complex AI workflows (agents, PBL suggestions).</li>
+                    <li>Develop LLM Gateway for various foundation models (Gemini, GPT-4).</li>
+                    <li>Implement asynchronous task handling with Celery and Redis.</li>
+                    <li>Set up MinIO for object storage and Typesense for search.</li>
+                    <li>Conduct security audits and performance optimization.</li>
+                  </ul>
+                </li>
+              </ul>
+              <p class="text-xs text-slate-600 mt-2">
+                Tools: Python, FastAPI, Node.js, Supabase, PostgreSQL, Redis, LangChain, LangGraph, Docker, Git. Focus on scalability, security, and AI model performance.
+              </p>
+            </div>
+          </div>
+
+          <div class="highlight-box">
+            <p class="font-semibold text-slate-900 mb-2">
+              <i class="fas fa-check-circle text-accent-blue mr-2"></i>
+              Continuous Integration & Deployment
+            </p>
+            <p class="text-slate-700">
+              Throughout all phases, CI/CD pipelines (GitHub Actions) will automate testing, linting, and deployment to staging and production environments, ensuring rapid and reliable releases.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Conclusion -->
+      <section class="section-padding bg-slate-900 text-white">
+        <div class="container mx-auto px-6 max-w-4xl">
+          <h2 class="serif text-3xl font-bold mb-8">Conclusion: Evolve's Vision</h2>
+
+          <div class="prose prose-lg prose-invert max-w-none">
+            <p class="text-xl text-slate-300 mb-6 leading-relaxed">
+              Evolve represents a sophisticated convergence of modern web technologies, open-source principles, and AI innovation, poised to deliver a truly transformative educational experience. Its architecture demonstrates a thoughtful balance between performance, flexibility, and accessibility, ensuring a robust and future-ready platform.
+            </p>
+
+            <div class="grid md:grid-cols-3 gap-6 my-8">
+              <div class="bg-slate-800 p-6 rounded-lg">
+                <h3 class="text-lg font-semibold text-white mb-3">
+                  <i class="fas fa-cogs text-accent-blue mr-2"></i>
+                  Technical Excellence
+                </h3>
+                <p class="text-slate-300 text-sm">
+                  Leveraging Next.js, FastAPI, Supabase, and AI orchestration with LangChain/LangGraph, Evolve is built on a solid, scalable, and high-performance foundation.
+                </p>
+              </div>
+
+              <div class="bg-slate-800 p-6 rounded-lg">
+                <h3 class="text-lg font-semibold text-white mb-3">
+                  <i class="fas fa-unlock text-accent-mint-green mr-2"></i>
+                  Open Innovation
+                </h3>
+                <p class="text-slate-300 text-sm">
+                  Its commitment to open-source tooling ensures transparency, community collaboration, and cost-effectiveness, with flexible deployment options.
+                </p>
+              </div>
+
+              <div class="bg-slate-800 p-6 rounded-lg">
+                <h3 class="text-lg font-semibold text-white mb-3">
+                  <i class="fas fa-rocket text-accent-orange mr-2"></i>
+                  Future-Ready Learning
+                </h3>
+                <p class="text-slate-300 text-sm">
+                  With deep AI integration, personalized learning paths, and project-based pedagogy, Evolve is designed to meet the evolving needs of modern education.
+                </p>
+              </div>
+            </div>
+
+            <p class="text-lg text-slate-300 leading-relaxed">
+              For universities and students seeking to harness AI capabilities for enhanced learning, Evolve offers a compelling solution that balances technical sophistication with practical accessibility. Its commitment to evidence-based pedagogy and continuous improvement makes it a strategic choice for the future of education.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+        // Initialize Vanta.js background
+        VANTA.NET({
+            el: "#vanta-bg",
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            minHeight: 200.00,
+            minWidth: 200.00,
+            scale: 1.00,
+            scaleMobile: 1.00,
+            color: 0x4682B4, /* Evolve's accent blue */
+            backgroundColor: 0x1A1A1A, /* Evolve's charcoal black */
+            points: 8.00,
+            maxDistance: 20.00,
+            spacing: 15.00
+        });
+
+        // Mobile TOC toggle
+        const tocToggle = document.getElementById('toc-toggle');
+        const tocFixed = document.querySelector('.toc-fixed');
+        
+        tocToggle.addEventListener('click', () => {
+            tocFixed.classList.toggle('mobile-open');
+        });
+
+        // Close TOC when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 1024 && 
+                !tocFixed.contains(e.target) && 
+                !tocToggle.contains(e.target)) {
+                tocFixed.classList.remove('mobile-open');
+            }
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    // Close mobile TOC after clicking
+                    if (window.innerWidth <= 1024) {
+                        tocFixed.classList.remove('mobile-open');
+                    }
+                }
+            });
+        });
+
+        // Highlight active section in TOC
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.toc-fixed a');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                // Adjust scroll threshold for highlighting
+                if (scrollY >= (sectionTop - 250)) { 
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('font-semibold', 'text-accent-blue'); /* Use Evolve's accent color */
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('font-semibold', 'text-accent-blue');
+                }
+            });
+        });
+    </script>
+  </body>
+
+</html>
